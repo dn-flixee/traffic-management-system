@@ -20,7 +20,7 @@ unsigned long previousMillisIR3 = 0;
 
 const long sec = 1000;
 const long IR_time = 3000;   //Milliseconds to increment green signal time  
-const int green_time = 10;  // Default Green signal time
+const int green_time = 10;  // Default Green signal time (seconds)
 
 int flag1 = 0;
 int flag_inc1 = 0;
@@ -48,7 +48,7 @@ const int LEDR2 = A3;
 const int LEDG3 = A4;
 const int LEDR3 = A5;   
 
-int green1=10;    //variable for counting green lights
+int green1=green_time;    //variable for counting green lights
 int green2=0;
 int green3=0;
 
@@ -82,7 +82,7 @@ void loop() {
       {
         Serial.println(" Emergency Vehicle Detected - ");
         if(!flag_rf1)
-        flag_rf = 1;
+          flag_rf = 1;
         flag_rf1 = 1;
       }
       else
@@ -97,7 +97,7 @@ void loop() {
     check_ir(IRstatus3, green3,flag3,flag_inc3,previousMillisIR3,3);
 
     //Updating Signal timing per seconds
-    if (currentMillis - previousMillis >= sec) {
+    if(currentMillis - previousMillis >= sec) {
       previousMillis = currentMillis;
 
       if(green1>0){
@@ -193,17 +193,17 @@ void check_ir(int IRstatus,int green,int flag,int flag_inc,int previousMillisIR,
         previousMillisIR = currentMillis;
         flag = 1;
       }
-      if((previousMillisIR1 + IR_time) <= currentMillis){       // Incrementing green light time if IR is activated for IR_time 
-        if(flag_inc1 == 0){
-          green1= green1 + 3;
+      if((previousMillisIR + IR_time) <= currentMillis){       // Incrementing green light time if IR is activated for IR_time 
+        if(flag_inc == 0){
+          green = green + 3;
           Serial.println("Green Increment in lane " + lane_no);
-          flag_inc1 = 1;
-          flag1 = 0;
+          flag_inc = 1;
+          flag = 0;
         }
       }
       else
-        flag_inc1 = 0;
+        flag_inc = 0;
     }
     else
-      flag1 = 0;
+      flag = 0;
 }
