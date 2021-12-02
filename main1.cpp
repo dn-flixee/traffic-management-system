@@ -10,7 +10,7 @@ String MasterTag = "596E795A";	// REPLACE this Tag ID with your Tag ID!!!
 String tagID = "";
 
 boolean getID(); //function to read RF ID
-void check_ir(int IRstatus,int green,int flag,int flag_inc,int previousMillisIR,int lane_no);
+void check_ir(int& IRstatus,int& green,int& flag,int& flag_inc,unsigned long& previousMillisIR,int lane_no);
 
 unsigned long currentMillis;    // Store the current running time of ardiuno in milliseconds
 unsigned long previousMillis = 0;
@@ -186,7 +186,7 @@ boolean getID()
   return true;
 }
 
-void check_ir(int IRstatus,int green,int flag,int flag_inc,int previousMillisIR,int lane_no){
+void check_ir(int& IRstatus,int& green,int& flag,int& flag_inc,unsigned long& previousMillisIR,int lane_no){
   if(IRstatus == 0 && green != 0){                               // Checking if IR is activated
       if(flag == 0){
         Serial.println("Current time save of IR " + lane_no);
