@@ -19,9 +19,10 @@ unsigned long previousMillisIR2 = 0;
 unsigned long previousMillisIR3 = 0;
 
 const long sec = 1000;
-const long IR_time = 3000;   //Milliseconds to increment green signal time  
+const long IR_time = 4000;   //Milliseconds to increment green signal time  
 const int green_time = 10;  // Default Green signal time (seconds)
 
+int count = 0;
 int flag1 = 0;
 int flag_inc1 = 0;
 
@@ -81,8 +82,11 @@ void loop() {
       if (tagID == MasterTag) 
       {
         Serial.println(" Emergency Vehicle Detected - ");
-        if(!flag_rf1)
+        if(!flag_rf1){
           flag_rf = 1;
+          previousMillisIR2 = 0;
+          previousMillisIR3 = 0;
+        }
         flag_rf1 = 1;
       }
       else
@@ -116,6 +120,7 @@ void loop() {
           if(green1==0){
               flag_rf1 = 0;
               green2 = green_time;
+              count=0;
           }
       }
       if(green2>0){
@@ -136,6 +141,7 @@ void loop() {
             flag_rf = 0;    
           }
           if(green2==0){
+              count=0;
               if(flag_rf1){
                 green1 = green_time;
               }
@@ -161,6 +167,7 @@ void loop() {
             flag_rf = 0;    
           }
           if(green3==0){
+              count=0;
               green1 = green_time;
           }
         }  
@@ -171,15 +178,15 @@ boolean getID()
 {
   // Getting ready for Reading PICCs
   if ( ! mfrc522.PICC_IsNewCardPresent()) { //If a new PICC placed to RFID reader continue
-  return false;
+    return false;
   }
   if ( ! mfrc522.PICC_ReadCardSerial()) { //Since a PICC placed get Serial and continue
-  return false;
+    return false;
   }
   tagID = "";
   for ( uint8_t i = 0; i < 4; i++) { // The MIFARE PICCs that we use have 4 byte UID
   //readCard[i] = mfrc522.uid.uidByte[i];
-  tagID.concat(String(mfrc522.uid.uidByte[i], HEX)); // Adds the 4 bytes in a single String variable
+    tagID.concat(String(mfrc522.uid.uidByte[i], HEX)); // Adds the 4 bytes in a single String variable
   }
   tagID.toUpperCase();
   mfrc522.PICC_HaltA(); // Stop reading
@@ -187,23 +194,29 @@ boolean getID()
 }
 
 void check_ir(int& IRstatus,int& green,int& flag,int& flag_inc,unsigned long& previousMillisIR,int lane_no){
-  if(IRstatus == 0 && green != 0){                               // Checking if IR is activated
-      if(flag == 0){
-        Serial.println("Current time save of IR " + lane_no);
-        previousMillisIR = currentMillis;
-        flag = 1;
-      }
-      if((previousMillisIR + IR_time) <= currentMillis){       // Incrementing green light time if IR is activated for IR_time 
-        if(flag_inc == 0){
-          green = green + 3;
-          Serial.println("Green Increment in lane " + lane_no);
-          flag_inc = 1;
-          flag = 0;
-        }
-      }
-      else
-        flag_inc = 0;
-    }
-    else
-      flag = 0;
+    if(count<3 || flag_rf1){
+        if(IRstatus == 0 && green != 0){                               // Checking if IR is activated
+            if(flag == 0){
+                Serial.println("Current time save of IR " + lane_no);
+                previousMillisIR = currentMillis;
+                flag = 1;
+            }
+            if((previousMillisIR + IR_time) <= currentMillis){       // Incrementing green light time if IR is activated for IR_time 
+                if(flag_inc == 0){
+                    green = green + 3;
+                    ++count;
+                    Serial.print("Green Increment in lane = ");
+                    Serial.println(lane_no);
+                    Serial.print("Count = ");
+                    Serial.println(count);
+                    flag_inc = 1;
+                    flag = 0;
+                }
+            }
+            else
+                flag_inc = 0;
+            }
+        else
+            flag = 0;
+  }
 }
