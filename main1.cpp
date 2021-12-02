@@ -3,22 +3,24 @@
 #include <MFRC522.h>
 #define SS_PIN 10
 #define RST_PIN 9
-//hello
 
 MFRC522 mfrc522(SS_PIN, RST_PIN); 
 byte readCard[4];
 String MasterTag = "596E795A";	// REPLACE this Tag ID with your Tag ID!!!
 String tagID = "";
 
-boolean getID(); //function for 
+boolean getID(); //function to read RF ID
+void check_ir(int IRstatus,int green,int flag,int flag_inc,int previousMillisIR,int lane_no);
 
+unsigned long currentMillis;    // Store the current running time of ardiuno in milliseconds
 unsigned long previousMillis = 0;
 unsigned long previousMillisIR1 = 0;  
 unsigned long previousMillisIR2 = 0;  
-unsigned long previousMillisIR3 = 0;       
+unsigned long previousMillisIR3 = 0;
+
 const long sec = 1000;
-const long IR_time = 3000;   
-const int green_time = 10;
+const long IR_time = 3000;   //Milliseconds to increment green signal time  
+const int green_time = 10;  // Default Green signal time
 
 int flag1 = 0;
 int flag_inc1 = 0;
@@ -32,6 +34,7 @@ int flag_inc3 = 0;
 int flag_rf = 0;
 int flag_rf1 = 0;
 
+//Pin Number of IR and LED
 const int IR1 = 7;
 const int IR2 = 6;
 const int IR3 = 5;
@@ -69,7 +72,7 @@ void setup() {
 
 void loop() {
 
-    unsigned long currentMillis = millis();
+    currentMillis = millis();
     int IRstatus1 = digitalRead(IR1);
     int IRstatus2 = digitalRead(IR2);
     int IRstatus3 = digitalRead(IR3);
@@ -77,12 +80,10 @@ void loop() {
     while (getID()) {
       if (tagID == MasterTag) 
       {
-        
         Serial.println(" Emergency Vehicle Detected - ");
         if(!flag_rf1)
         flag_rf = 1;
         flag_rf1 = 1;
-        // You can write any code here like opening doors, switching on a relay, lighting up an LED, or anything else you can think of.
       }
       else
       {
@@ -90,70 +91,12 @@ void loop() {
       }
     }
 
-    //Checking IR 1
-    if(IRstatus1 == 0 && green1 != 0){
-      if(flag1 == 0){
-        Serial.println("Current time save of IR 1");
-        previousMillisIR1 = currentMillis;
-        flag1 = 1;
-      }
-      if((previousMillisIR1 + IR_time) <= currentMillis){
-        if(flag_inc1 == 0){
-          green1= green1 + 3;
-          Serial.println("Green 1 Increment");
-          flag_inc1 = 1;
-          flag1 = 0;
-        }
-      }
-      else
-        flag_inc1 = 0;
-    }
-    else
-      flag1 = 0;
+    //Checking IR
+    check_ir(IRstatus1, green1,flag1,flag_inc1,previousMillisIR1,1);
+    check_ir(IRstatus2, green2,flag2,flag_inc2,previousMillisIR2,2);
+    check_ir(IRstatus3, green3,flag3,flag_inc3,previousMillisIR3,3);
 
-    //Checking IR 2
-    if(IRstatus2 == 0 && green2 != 0 && !flag_rf1){
-      if(flag2 == 0){
-        Serial.println("Current time save of IR 2");
-        previousMillisIR2 = currentMillis;
-        flag2 = 1;
-      }
-      if((previousMillisIR2 + IR_time) <= currentMillis){
-        if(flag_inc2 == 0){
-          green2= green2 + 3;
-          Serial.println("Green 2 Increment");
-          flag_inc2 = 1;
-          flag2 = 0;
-        }
-      }
-      else
-        flag_inc2 = 0;
-    }
-    else
-      flag2 = 0;
-
-    // Checking IR 3
-    if(IRstatus3 == 0 && green3 != 0 && !flag_rf1){
-      if(flag3 == 0){
-        Serial.println("Current time save of IR 3");
-        previousMillisIR3 = currentMillis;
-        flag3 = 1;
-      }
-      if((previousMillisIR3 + IR_time) <= currentMillis){
-        if(flag_inc3 == 0){
-          green3= green3 + 3;
-          Serial.println("Green 3 Increment");
-          flag_inc3 = 1;
-          flag3 = 0;
-        }
-      }
-      else
-        flag_inc3 = 0;
-    }
-    else
-      flag3 = 0;
-
-
+    //Updating Signal timing per seconds
     if (currentMillis - previousMillis >= sec) {
       previousMillis = currentMillis;
 
@@ -197,7 +140,7 @@ void loop() {
                 green1 = green_time;
               }
               else{
-                red2 = red2_temp;
+                green3 = green_time;
               }
           }
       }
@@ -220,9 +163,8 @@ void loop() {
           if(green3==0){
               green1 = green_time;
           }
-      }
-      
-  }
+        }  
+    }
 }
 
 boolean getID() 
@@ -242,4 +184,26 @@ boolean getID()
   tagID.toUpperCase();
   mfrc522.PICC_HaltA(); // Stop reading
   return true;
+}
+
+void check_ir(int IRstatus,int green,int flag,int flag_inc,int previousMillisIR,int lane_no){
+  if(IRstatus == 0 && green != 0){                               // Checking if IR is activated
+      if(flag == 0){
+        Serial.println("Current time save of IR " + lane_no);
+        previousMillisIR = currentMillis;
+        flag = 1;
+      }
+      if((previousMillisIR1 + IR_time) <= currentMillis){       // Incrementing green light time if IR is activated for IR_time 
+        if(flag_inc1 == 0){
+          green1= green1 + 3;
+          Serial.println("Green Increment in lane " + lane_no);
+          flag_inc1 = 1;
+          flag1 = 0;
+        }
+      }
+      else
+        flag_inc1 = 0;
+    }
+    else
+      flag1 = 0;
 }
