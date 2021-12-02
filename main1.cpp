@@ -48,7 +48,7 @@ const int LEDR2 = A3;
 const int LEDG3 = A4;
 const int LEDR3 = A5;   
 
-int green1=10;
+int green1=10;    //variable for counting green lights
 int green2=0;
 int green3=0;
 
