@@ -10,7 +10,7 @@ byte readCard[4];
 String MasterTag = "596E795A";	// REPLACE this Tag ID with your Tag ID!!!
 String tagID = "";
 
-boolean getID();
+boolean getID(); //function for 
 
 unsigned long previousMillis = 0;
 unsigned long previousMillisIR1 = 0;  
@@ -45,17 +45,8 @@ const int LEDR2 = A3;
 const int LEDG3 = A4;
 const int LEDR3 = A5;   
 
-
-int red1=0;
-int red1_temp=0;
 int green1=10;
-
-int red2=0;
-int red2_temp=0;
 int green2=0;
-
-int red3=0;
-int red3_temp=0;
 int green3=0;
 
 void setup() {
@@ -176,13 +167,11 @@ void loop() {
           digitalWrite(LEDR3,HIGH);
   
           --green1;
-          ++red1_temp;
           Serial.print("Green 1 = ");
           Serial.println(green1);
 
           if(green1==0){
               flag_rf1 = 0;
-              red1 = red1_temp;
               green2 = green_time;
           }
       }
@@ -198,7 +187,7 @@ void loop() {
           --green2;
           Serial.print("Green 2 = ");
           Serial.println(green2);
-          ++red2_temp;
+
           if(flag_rf && green2 > 3){
             green2 = 3;
             flag_rf = 0;    
@@ -208,7 +197,6 @@ void loop() {
                 green1 = green_time;
               }
               else{
-                green3 = green_time;
                 red2 = red2_temp;
               }
           }
@@ -223,7 +211,6 @@ void loop() {
           digitalWrite(LEDR3,LOW);
 
           --green3;
-          ++red3_temp;
           Serial.print("Green 3 = ");
           Serial.println(green3);
           if(flag_rf && green3 > 3){
@@ -231,29 +218,10 @@ void loop() {
             flag_rf = 0;    
           }
           if(green3==0){
-              red3 = red3_temp;
               green1 = green_time;
           }
       }
       
-      // if(red1>0){
-      // digitalWrite(LEDR1,HIGH);
-      // digitalWrite(LEDR2,LOW);
-      // digitalWrite(LEDR3,HIGH);
-      // --red1;
-      // }
-      // if(red2>0){
-      //   digitalWrite(LEDR1,HIGH);
-      //   digitalWrite(LEDR2,HIGH);
-      //   digitalWrite(LEDR3,LOW);
-      //   --red2;
-      // }
-      // if(red3>0){
-      //   digitalWrite(LEDR1,LOW);
-      //   digitalWrite(LEDR2,HIGH);
-      //   digitalWrite(LEDR3,HIGH);
-      //   --red3;
-      // }
   }
 }
 
